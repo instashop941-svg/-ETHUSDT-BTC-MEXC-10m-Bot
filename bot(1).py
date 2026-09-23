@@ -1,4 +1,4 @@
-import os, json, time, logging
+
 from collections import OrderedDict
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -170,11 +170,11 @@ class Engine:
             return
 
         log.info('PRE-SIGNAL | start=%s %s | live trigger=%s %s | ~2m left', utc(start['ts']), sc, utc(target_ts), trig)
-        group_text=(f'**ÐÑÑ Ð³Ð¾ÑÐ¾Ð²Ñ?**\n'
-                     f'**Ð¡ÐºÐ¾ÑÐ¾ Ð´Ð°Ð¼ Ð¡ÐÐÐÐÐ!**\n\n'
+        group_text=(f'**Всі готові?**\n'
+                     f'**Скоро дам СИГНАЛ!**\n\n'
                      f'{self.symbol.replace("_USDT","USDT")} Futures\n'
                      'Timeframe: 10m\n\n'
-                     'â ï¸ Ð¡Ð¸Ð³Ð½Ð°Ð» Ð±ÑÐ´Ðµ ÑÑÐ»ÑÐºÐ¸ Ð¿ÑÑÐ»Ñ Ð·Ð°ÐºÑÐ¸ÑÑÑ ÑÐ²ÑÑÐºÐ¸.')
+                     '⚠️ Сигнал буде тільки після закриття свічки.')
         # Pre-signal announcement is intended for the Telegram group only.
         tg('', group_text)
         self.pre_alerted.add(target_ts)
@@ -218,8 +218,8 @@ class Engine:
                 else:
                     # After #8 closes successfully, send the final signal.
                     if rel == 2 and not p.get('signal_sent', False):
-                        signal_text=(f'SIGNAL {p["direction"]}\n\n{self.symbol.replace("_USDT","USDT")} Futures\nTimeframe: 10m\nStart: {kyiv(p["start_ts"])} Kyiv time\nTrigger: candle 6\n\nSignal only - no automatic trading.\n\nÐ¢ÑÐµÐ¹Ð´ÐµÑ ÐÐ°ÑÐ¸Ð»Ñ ÐÐ°Ð²Ð»ÑÐ²\n@vasylpavliv\nhttps://t.me/vasylpavliv')
-                        signal_group_text=(f'SIGNAL {p["direction"]}\n\n{self.symbol.replace("_USDT","USDT")} Futures\nTimeframe: 10m\nStart: {kyiv(p["start_ts"])} Kyiv time\n\nSignal only - no automatic trading.\n\nÐ¢ÑÐµÐ¹Ð´ÐµÑ ÐÐ°ÑÐ¸Ð»Ñ ÐÐ°Ð²Ð»ÑÐ²\n@vasylpavliv\nhttps://t.me/vasylpavliv')
+                        signal_text=(f'SIGNAL {p["direction"]}\n\n{self.symbol.replace("_USDT","USDT")} Futures\nTimeframe: 10m\nStart: {kyiv(p["start_ts"])} Kyiv time\nTrigger: candle 6\n\nSignal only - no automatic trading.\n\nТрейдер Василь Павлів\n@vasylpavliv\nhttps://t.me/vasylpavliv')
+                        signal_group_text=(f'SIGNAL {p["direction"]}\n\n{self.symbol.replace("_USDT","USDT")} Futures\nTimeframe: 10m\nStart: {kyiv(p["start_ts"])} Kyiv time\n\nSignal only - no automatic trading.\n\nТрейдер Василь Павлів\n@vasylpavliv\nhttps://t.me/vasylpavliv')
                         tg(signal_text, signal_group_text)
                         p['signal_sent']=True
                     keep.append(p)
@@ -233,10 +233,10 @@ class Engine:
             want='GREEN' if p['direction']=='LONG' else 'RED'
             if rel <= 9 and color(cur)==want:
                 log.info('RESULT WIN | %s | start=%s | result candle=%d', p['direction'], utc(p['start_ts']), rel+6)
-                tg(f"WIN\n{self.symbol.replace('_USDT','USDT')} Futures\nDirection: {p['direction']}\nResult candle: {rel+6}/15\n\nÐ¢ÑÐµÐ¹Ð´ÐµÑ ÐÐ°ÑÐ¸Ð»Ñ ÐÐ°Ð²Ð»ÑÐ²\n@vasylpavliv\nhttps://t.me/vasylpavliv")
+                tg(f"WIN\n{self.symbol.replace('_USDT','USDT')} Futures\nDirection: {p['direction']}\nResult candle: {rel+6}/15\n\nТрейдер Василь Павлів\n@vasylpavliv\nhttps://t.me/vasylpavliv")
             elif rel >= 9:
                 log.info('RESULT LOSS | %s | start=%s | no confirmation in candles 9-15', p['direction'], utc(p['start_ts']))
-                tg(f"LOSS\n{self.symbol.replace('_USDT','USDT')} Futures\nDirection: {p['direction']}\nNo confirmation in candles 9-15\n\nÐ¢ÑÐµÐ¹Ð´ÐµÑ ÐÐ°ÑÐ¸Ð»Ñ ÐÐ°Ð²Ð»ÑÐ²\n@vasylpavliv\nhttps://t.me/vasylpavliv")
+                tg(f"LOSS\n{self.symbol.replace('_USDT','USDT')} Futures\nDirection: {p['direction']}\nNo confirmation in candles 9-15\n\nТрейдер Василь Павлів\n@vasylpavliv\nhttps://t.me/vasylpavliv")
             else:
                 keep.append(p)
         self.pending=keep
