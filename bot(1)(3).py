@@ -136,13 +136,13 @@ class Engine:
             log.info('INITIALIZED | history=%d | latest=%s %s | waiting for NEW 10m candle', len(self.c), utc(latest['ts']), color(latest))
 
     def maybe_pre_alert(self, live10):
-        """At ~2 minutes before trigger close, warn when the live trigger is opposite the start."""
+        """At ~1 minute before candle #8 closes, warn only while #6/#7/#8 match."""
         if not self.initialized or not live10:
             return
-        # Only send during the final ~2 minutes of the current 10m candle.
+        # Only send during the final ~1 minute of the current 10m candle (#8).
         now=time.time()
         elapsed=now-live10['ts']
-        if elapsed < 480 or elapsed >= 600:
+        if elapsed < 540 or elapsed >= 600:
             return
 
         keys=list(self.c)
@@ -163,13 +163,21 @@ class Engine:
         if sidx+1 < len(keys) and color(self.c[keys[sidx+1]]) == sc:
             return
 
-        trig=color(live10)
+        c6_ts=target_ts-2*600
+        c7_ts=target_ts-1*600
+        if c6_ts not in self.c or c7_ts not in self.c:
+            return
+        trig=color(self.c[c6_ts])
         if trig not in ('GREEN','RED') or trig == sc:
+            return
+        if color(self.c[c7_ts]) != trig:
+            return
+        if color(live10) != trig:
             return
         if target_ts in self.pre_alerted:
             return
 
-        log.info('PRE-SIGNAL | start=%s %s | live trigger=%s %s | ~2m left', utc(start['ts']), sc, utc(target_ts), trig)
+        log.info('PRE-SIGNAL | start=%s %s | live #8=%s %s | ~1m left', utc(start['ts']), sc, utc(target_ts), trig)
         group_text=(f'**Всі готові?**\n'
                      f'**Скоро дам СИГНАЛ!**\n\n'
                      f'{self.symbol.replace("_USDT","USDT")} Futures\n'
